@@ -112,8 +112,8 @@ def seed_database():
         except Exception:
             pass
 
-        if not User.query.filter_by(username='admin').first():
-            admin = User(username='admin', password_hash=generate_password_hash('admin123'), role='teacher', full_name='Mr. Admin', position='Mx HOD')
+        if not User.query.filter_by(username='maths').first():
+            admin = User(username='maths', password_hash=generate_password_hash('mxnamba'), role='teacher', full_name='Mr. Admin', position='Mx HOD')
             db.session.add(admin)
         db.session.commit()
 
