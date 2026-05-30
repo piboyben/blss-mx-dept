@@ -1,6 +1,7 @@
+
 import os
 import mimetypes
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,6 +24,15 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'teachers'
+
+# Prevent caching of HTML and API responses to fix login/logout validation
+@app.after_request
+def disable_cache(response):
+    if 'text/html' in response.content_type or '/api/' in request.path:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
 
 ALLOWED_EXTENSIONS = {'pdf', 'csv', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'webm', 'ogg', 'mp3', 'wav', 'ppt', 'pptx'}
 
@@ -70,7 +80,8 @@ class Comment(db.Model):
     full_name = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(50), nullable=False)
     class_name = db.Column(db.String(20), nullable=True)
-    contact = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(150), nullable=True)
+    phone = db.Column(db.String(50), nullable=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -91,11 +102,19 @@ def seed_database():
                 if 'profile_image' not in cols:
                     db.session.execute(text("ALTER TABLE user ADD COLUMN profile_image VARCHAR(200) DEFAULT ''"))
                     db.session.commit()
+            if 'comment' in inspector.get_table_names():
+                cols = [c['name'] for c in inspector.get_columns('comment')]
+                if 'email' not in cols:
+                    db.session.execute(text("ALTER TABLE comment ADD COLUMN email VARCHAR(150) DEFAULT ''"))
+                    db.session.commit()
+                if 'phone' not in cols:
+                    db.session.execute(text("ALTER TABLE comment ADD COLUMN phone VARCHAR(50) DEFAULT ''"))
+                    db.session.commit()
         except Exception:
             pass
 
-        if not User.query.filter_by(username='mrgina').first():
-            admin = User(username='admin', password_hash=generate_password_hash('@bayune2026'), role='teacher', full_name='Mr. Admin', position='Mx HOD')
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', password_hash=generate_password_hash('admin123'), role='teacher', full_name='Mr. Admin', position='Mx HOD')
             db.session.add(admin)
         db.session.commit()
 
@@ -153,21 +172,24 @@ def login():
     return redirect(url_for('teachers'))
 
 @app.route('/logout')
-@login_required
 def logout():
     logout_user()
+    session.clear()
     flash('Logged out successfully.')
     return redirect(url_for('home'))
 
-# Comments Routes
 @app.route('/api/comments', methods=['POST'])
 def submit_comment():
     full_name = request.form.get('full_name')
     status = request.form.get('status')
     class_name = request.form.get('class_name')
-    contact = request.form.get('contact')
+    email = request.form.get('email')
+    phone = request.form.get('phone')
     content = request.form.get('content')
     
+    if not email and not phone:
+        flash('Please provide at least an email or phone number.')
+        return redirect(url_for('about'))
     if status == 'Student' and not class_name:
         flash('Please select your class.')
         return redirect(url_for('about'))
@@ -175,7 +197,8 @@ def submit_comment():
         flash('Comment must be between 1 and 255 words.')
         return redirect(url_for('about'))
         
-    db.session.add(Comment(full_name=full_name, status=status, class_name=class_name if status == 'Student' else None, contact=contact, content=content))
+    db.session.add(Comment(full_name=full_name, status=status, class_name=class_name if status == 'Student' else None, 
+                           email=email, phone=phone, content=content))
     db.session.commit()
     flash('Thank you! Your comment/query has been submitted.')
     return redirect(url_for('about'))
@@ -191,7 +214,6 @@ def delete_comment(comment_id):
         flash('Comment deleted.')
     return redirect(url_for('about'))
 
-# Updates CRUD
 @app.route('/api/updates', methods=['POST'])
 @login_required
 def post_update():
@@ -226,7 +248,6 @@ def delete_update(update_id):
         flash('Update deleted.')
     return redirect(url_for('updates'))
 
-# Resources
 @app.route('/api/resources', methods=['POST'])
 @login_required
 def upload_resource():
@@ -287,7 +308,6 @@ def delete_resource(res_id):
         flash('Resource deleted.')
     return redirect(url_for('students'))
 
-# Teacher Profile
 @app.route('/api/teacher/profile', methods=['POST'])
 @login_required
 def update_teacher_profile():
@@ -303,7 +323,6 @@ def update_teacher_profile():
     flash('Profile updated.')
     return redirect(url_for('teachers'))
 
-# Teachers Aids
 @app.route('/api/teacher-aids', methods=['POST'])
 @login_required
 def upload_teacher_aid():
@@ -374,3 +393,5 @@ def delete_aid(aid_id):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+
