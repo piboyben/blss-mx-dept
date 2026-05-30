@@ -25,7 +25,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'teachers'
 
-# Prevent caching of HTML and API responses to fix login/logout validation
 @app.after_request
 def disable_cache(response):
     if 'text/html' in response.content_type or '/api/' in request.path:
@@ -178,27 +177,55 @@ def logout():
     flash('Logged out successfully.')
     return redirect(url_for('home'))
 
+@app.route('/api/teachers/add', methods=['POST'])
+@login_required
+def add_teacher():
+    if current_user.role != 'teacher': abort(403)
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '').strip()
+    full_name = request.form.get('full_name', '').strip()
+    position = request.form.get('position', '').strip()
+
+    if not username or not password or not full_name or not position:
+        flash('All fields are required.')
+        return redirect(url_for('teachers'))
+
+    if User.query.filter_by(username=username).first():
+        flash('Username already exists.')
+        return redirect(url_for('teachers'))
+
+    new_teacher = User(
+        username=username,
+        password_hash=generate_password_hash(password),
+        role='teacher',
+        full_name=full_name,
+        position=position
+    )
+    db.session.add(new_teacher)
+    db.session.commit()
+    flash(f'Teacher {full_name} added successfully.')
+    return redirect(url_for('teachers'))
+
 @app.route('/api/comments', methods=['POST'])
 def submit_comment():
     full_name = request.form.get('full_name')
     status = request.form.get('status')
     class_name = request.form.get('class_name')
-    email = request.form.get('email')
-    phone = request.form.get('phone')
-    content = request.form.get('content')
+    email = (request.form.get('email') or '').strip()
+    phone = (request.form.get('phone') or '').strip()
+    content = (request.form.get('content') or '').strip()
     
     if not email and not phone:
-        flash('Please provide at least an email or phone number.')
+        flash('Please provide a valid Email or Phone Number.')
         return redirect(url_for('about'))
     if status == 'Student' and not class_name:
-        flash('Please select your class.')
+        flash('Students must select their Class.')
         return redirect(url_for('about'))
     if not content or len(content.split()) > 255:
         flash('Comment must be between 1 and 255 words.')
         return redirect(url_for('about'))
         
-    db.session.add(Comment(full_name=full_name, status=status, class_name=class_name if status == 'Student' else None, 
-                           email=email, phone=phone, content=content))
+    db.session.add(Comment(full_name=full_name, status=status, class_name=class_name if status == 'Student' else None, email=email, phone=phone, content=content))
     db.session.commit()
     flash('Thank you! Your comment/query has been submitted.')
     return redirect(url_for('about'))
@@ -393,5 +420,6 @@ def delete_aid(aid_id):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 

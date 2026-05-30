@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,7 +32,7 @@
     <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-2 flex justify-between items-center">
             <a href="/" class="flex items-center gap-3">
-                <img src="uploads/BLSS.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white">
+                <img src="https://ui-avatars.com/api/?name=BL&background=1e3a8a&color=fff&length=2&size=100" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white">
                 <div class="flex flex-col">
                     <span class="text-lg md:text-xl font-bold tracking-tight leading-tight">Bayune Lutheran</span>
                     <span class="text-xs md:text-sm font-semibold text-blue-200">Mathematics Department</span>
@@ -232,7 +230,14 @@
                         <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 w-full font-semibold transition">Login to Dashboard</button>
                     </form>
                 {% else %}
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Department Faculty Profiles</h3>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Department Faculty Profiles</h3>
+                        <button onclick="document.getElementById('add-teacher-modal').classList.remove('hidden'); document.getElementById('add-teacher-modal').classList.add('flex');" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium transition mt-2 sm:mt-0 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Teacher
+                        </button>
+                    </div>
+                    
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                         {% for teacher in teachers %}
                             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center hover:shadow-lg transition border-t-4 border-purple-500 relative">
@@ -250,6 +255,30 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
+                    </div>
+
+                    <!-- Add Teacher Modal -->
+                    <div id="add-teacher-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+                        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+                            <h3 class="text-lg font-bold mb-4">Add New Teacher</h3>
+                            <form action="/api/teachers/add" method="POST" class="space-y-3">
+                                <input type="text" name="username" placeholder="Username (e.g., jsmith)" required class="w-full p-3 border border-gray-300 rounded">
+                                <input type="password" name="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded">
+                                <input type="text" name="full_name" placeholder="Full Name (e.g., Mr. John Smith)" required class="w-full p-3 border border-gray-300 rounded">
+                                <select name="position" required class="w-full p-3 border border-gray-300 rounded bg-white">
+                                    <option value="" disabled selected>Select Position</option>
+                                    <option value="Mx HOD">Mx HOD</option>
+                                    <option value="SSM">SSM</option>
+                                    <option value="SM">SM</option>
+                                    <option value="Senior Teacher">Senior Teacher</option>
+                                    <option value="Teacher">Teacher</option>
+                                </select>
+                                <div class="flex justify-end gap-2 mt-4">
+                                    <button type="button" onclick="document.getElementById('add-teacher-modal').classList.add('hidden'); document.getElementById('add-teacher-modal').classList.remove('flex');" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">Add Teacher</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- Profile Edit Modal -->
@@ -378,7 +407,10 @@
                             </select>
                         </div>
 
-                        <input type="text" name="contact" placeholder="Email or Phone Number" required class="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <input type="email" name="email" placeholder="Email Address" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <input type="tel" name="phone" placeholder="Phone Number" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
                         
                         <div class="relative">
                             <textarea name="content" id="comment-content" placeholder="Write your comment/query here (Max 255 words)..." rows="4" required maxlength="1500" class="w-full p-3 border border-gray-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="updateWordCount()"></textarea>
@@ -400,9 +432,22 @@
                                                 {% if comment.class_name %}
                                                     <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded">Class: {{ comment.class_name }}</span>
                                                 {% endif %}
-                                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded">📞 {{ comment.contact }}</span>
-                                                <span class="text-gray-400">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                                             </div>
+                                            <div class="flex flex-wrap gap-3 mt-3 text-sm font-medium">
+                                                {% if comment.email %}
+                                                    <a href="mailto:{{ comment.email }}" class="flex items-center gap-1 text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                                        {{ comment.email }}
+                                                    </a>
+                                                {% endif %}
+                                                {% if comment.phone %}
+                                                    <a href="tel:{{ comment.phone }}" class="flex items-center gap-1 text-green-600 hover:text-green-800 bg-green-50 px-3 py-1 rounded transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                                        {{ comment.phone }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-xs text-gray-400 mt-2">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                                         </div>
                                         <form action="/api/comments/{{ comment.id }}/delete" method="POST" onsubmit="return confirm('Delete this comment permanently?');">
                                             <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1">
@@ -468,18 +513,14 @@
             });
         }, 4000);
 
-        // Comment Form Logic
         function toggleClassDropdown() {
             const status = document.getElementById('comment-status').value;
             const container = document.getElementById('class-select-container');
             const classInput = document.getElementById('class-dropdown');
             if(status === 'Student') {
-                container.classList.remove('hidden');
-                classInput.required = true;
+                container.classList.remove('hidden'); classInput.required = true;
             } else {
-                container.classList.add('hidden');
-                classInput.value = '';
-                classInput.required = false;
+                container.classList.add('hidden'); classInput.value = ''; classInput.required = false;
             }
         }
 
@@ -492,7 +533,6 @@
             counter.classList.toggle('text-green-600', words <= 255 && words > 0);
         }
 
-        // Player & Preview Modals
         function openPlayer(id, type, isAid = false) {
             const modal = document.getElementById('player-modal');
             const container = document.getElementById('player-container');
@@ -506,7 +546,11 @@
                 container.innerHTML = `<video controls autoplay class="media-player"><source src="${url}" type="video/${type}"></video>`;
             }
         }
-        function closePlayer() { document.getElementById('player-modal').classList.add('hidden'); document.getElementById('player-modal').classList.remove('flex'); document.getElementById('player-container').innerHTML = ''; }
+        function closePlayer() {
+            document.getElementById('player-modal').classList.add('hidden');
+            document.getElementById('player-modal').classList.remove('flex');
+            document.getElementById('player-container').innerHTML = '';
+        }
         document.getElementById('player-modal').addEventListener('click', (e) => { if(e.target.id === 'player-modal') closePlayer(); });
 
         function openPreview(id, type, isAid = false) {
@@ -520,10 +564,13 @@
             else if(type === 'pdf') container.innerHTML = `<iframe src="${url}" class="w-full h-[70vh] border-none rounded"></iframe>`;
             else fetch(url).then(r => r.text()).then(t => container.innerHTML = `<pre class="bg-white p-4 rounded border text-sm overflow-auto w-full max-h-[70vh] whitespace-pre-wrap">${t.replace(/</g, '&lt;')}</pre>`);
         }
-        function closePreview() { document.getElementById('preview-modal').classList.add('hidden'); document.getElementById('preview-modal').classList.remove('flex'); document.getElementById('preview-container').innerHTML = ''; }
+        function closePreview() {
+            document.getElementById('preview-modal').classList.add('hidden');
+            document.getElementById('preview-modal').classList.remove('flex');
+            document.getElementById('preview-container').innerHTML = '';
+        }
         document.getElementById('preview-modal').addEventListener('click', (e) => { if(e.target.id === 'preview-modal') closePreview(); });
 
-        // Profile Edit Modal
         function openProfileEdit(name, pos, user) {
             document.getElementById('edit-fullname').value = name;
             document.getElementById('edit-position').value = pos;
@@ -536,7 +583,17 @@
         }
         document.getElementById('profile-edit-modal').addEventListener('click', (e) => { if(e.target.id === 'profile-edit-modal') closeProfileEdit(); });
 
+        // Add Teacher Modal Backdrop Click Close
+        document.getElementById('add-teacher-modal').addEventListener('click', (e) => {
+            if(e.target.id === 'add-teacher-modal') {
+                e.target.classList.add('hidden'); e.target.classList.remove('flex');
+            }
+        });
+
         if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     </script>
 </body>
 </html>
+
+
+
