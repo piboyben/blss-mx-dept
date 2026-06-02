@@ -238,29 +238,50 @@
                     </div>
                 {% endif %}
             </section>
-        {% elif page == 'teachers' %}
+               {% elif page == 'teachers' %}
             <section class="max-w-5xl mx-auto">
                 <h2 class="text-3xl font-bold text-blue-900 mb-6 text-center">👨🏫 Teacher Portal</h2>
+                
                 {% if not current_user.is_authenticated %}
-                    <form action="/login" method="POST" class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
-                        <div class="text-center mb-6">
-                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            </div>
-                            <h3 class="text-xl font-semibold">Secure Login</h3>
-                            <p class="text-sm text-gray-500">Enter your credentials to manage content</p>
+                    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <!-- Login Form -->
+                        <div class="bg-white p-8 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-semibold mb-4 text-center text-blue-900">Existing Teacher Login</h3>
+                            <form action="/login" method="POST" class="space-y-4">
+                                <input type="text" name="username" placeholder="Username" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <input type="password" name="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 w-full font-semibold transition">Login</button>
+                            </form>
                         </div>
-                        <input type="text" name="username" placeholder="Username" required class="w-full p-3 border border-gray-300 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                        <input type="password" name="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                        <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800 w-full font-semibold transition">Login to Dashboard</button>
-                    </form>
+
+                        <!-- Registration Form -->
+                        <div class="bg-green-50 p-8 rounded-xl shadow-lg border-2 border-green-200">
+                            <h3 class="text-xl font-semibold mb-2 text-center text-green-800">New Teacher Registration</h3>
+                            <p class="text-sm text-gray-600 mb-4 text-center">Create your own teacher profile.</p>
+                            <form action="/api/teachers/register" method="POST" class="space-y-3">
+                                <input type="text" name="full_name" placeholder="Full Name (e.g., Mr. John Smith)" required class="w-full p-3 border border-gray-300 rounded">
+                                <select name="position" required class="w-full p-3 border border-gray-300 rounded bg-white">
+                                    <option value="" disabled selected>Select Position</option>
+                                    <option value="Mx HOD">Mx HOD</option>
+                                    <option value="SSM">SSM</option>
+                                    <option value="SM">SM</option>
+                                    <option value="Senior Teacher">Senior Teacher</option>
+                                    <option value="Teacher">Teacher</option>
+                                </select>
+                                <input type="text" name="username" placeholder="Choose a Username" required class="w-full p-3 border border-gray-300 rounded">
+                                <input type="password" name="password" placeholder="Choose a Password" required class="w-full p-3 border border-gray-300 rounded">
+                                <input type="text" name="school_code" placeholder="School Secret Code" required class="w-full p-3 border border-gray-300 rounded bg-yellow-50" title="Ask the HOD for the code">
+                                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 w-full font-semibold transition flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Create My Account
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 {% else %}
+                    <!-- LOGGED IN VIEW -->
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Department Faculty Profiles</h3>
-                        <button onclick="document.getElementById('add-teacher-modal').classList.remove('hidden'); document.getElementById('add-teacher-modal').classList.add('flex');" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium transition mt-2 sm:mt-0 flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Add Teacher
-                        </button>
                     </div>
                     
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -275,7 +296,6 @@
                                 {% else %}
                                     <img src="https://ui-avatars.com/api/?name={{ teacher.full_name|urlencode }}&background=6d28d9&color=fff&length=2&size=120" alt="Default" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm">
                                 {% endif %}
-
                                 <h4 class="text-lg font-bold text-blue-900">{{ teacher.full_name }}</h4>
                                 <p class="text-purple-600 font-semibold text-sm mb-2">{{ teacher.position }}</p>
                                 <p class="text-xs text-gray-500">@{{ teacher.username }}</p>
@@ -285,30 +305,6 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
-                    </div>
-
-                    <!-- Add Teacher Modal -->
-                    <div id="add-teacher-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
-                        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-                            <h3 class="text-lg font-bold mb-4">Add New Teacher</h3>
-                            <form action="/api/teachers/add" method="POST" class="space-y-3">
-                                <input type="text" name="username" placeholder="Username (e.g., jsmith)" required class="w-full p-3 border border-gray-300 rounded">
-                                <input type="password" name="password" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded">
-                                <input type="text" name="full_name" placeholder="Full Name (e.g., Mr. John Smith)" required class="w-full p-3 border border-gray-300 rounded">
-                                <select name="position" required class="w-full p-3 border border-gray-300 rounded bg-white">
-                                    <option value="" disabled selected>Select Position</option>
-                                    <option value="Mx HOD">Mx HOD</option>
-                                    <option value="SSM">SSM</option>
-                                    <option value="SM">SM</option>
-                                    <option value="Senior Teacher">Senior Teacher</option>
-                                    <option value="Teacher">Teacher</option>
-                                </select>
-                                <div class="flex justify-end gap-2 mt-4">
-                                    <button type="button" onclick="document.getElementById('add-teacher-modal').classList.add('hidden'); document.getElementById('add-teacher-modal').classList.remove('flex');" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-                                    <button type="submit" class="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">Add Teacher</button>
-                                </div>
-                            </form>
-                        </div>
                     </div>
 
                     <!-- Profile Edit Modal -->
@@ -386,6 +382,7 @@
                     </div>
                 {% endif %}
             </section>
+
         {% elif page == 'about' %}
             <section class="max-w-4xl mx-auto space-y-10">
                 <div class="bg-white p-8 rounded-xl shadow-md">
