@@ -1,6 +1,8 @@
- 
 import os
 import mimetypes
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -12,7 +14,7 @@ from sqlalchemy import inspect, text
 app = Flask(__name__)
 
 # ==========================================
-# 🔹 DATABASE CONFIGURATION (FIXED)
+# DATABASE CONFIGURATION
 # ==========================================
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -20,11 +22,8 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 if DATABASE_URL:
-    # Use PostgreSQL (Render)
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 else:
-    # Use Local SQLite (Codespace/Local)
-    # We use an absolute path to ensure the file is found regardless of where python is run from
     base_dir = os.path.abspath(os.path.dirname(__file__))
     db_path = os.path.join(base_dir, 'bayune_maths.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
@@ -34,19 +33,30 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bayune-lhs-maths-secure
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-# Ensure required directories exist
+# Ensure directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'), exist_ok=True)
 STATIC_MEDIA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'resources')
 os.makedirs(STATIC_MEDIA_DIR, exist_ok=True)
 
-# 🔹 INIT DB (MUST BE BEFORE MODELS)
+# ==========================================
+# CLOUDINARY CONFIGURATION
+# ==========================================
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+if CLOUDINARY_URL:
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+    app.config['CLOUDINARY_ENABLED'] = True
+else:
+    app.config['CLOUDINARY_ENABLED'] = False
+
+# ==========================================
+# INITIALIZE EXTENSIONS
+# ==========================================
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'teachers'
 
-# 🔒 Prevent Caching: Fixes logout & stale data issues
 @app.after_request
 def disable_cache(response):
     if 'text/html' in response.content_type or '/api/' in request.path:
@@ -56,9 +66,10 @@ def disable_cache(response):
     return response
 
 ALLOWED_EXTENSIONS = {'pdf', 'csv', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'webm', 'ogg', 'mp3', 'wav', 'ppt', 'pptx'}
+IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # ==========================================
-# 🔹 DATABASE MODELS
+# DATABASE MODELS
 # ==========================================
 
 class User(UserMixin, db.Model):
@@ -68,7 +79,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(50), default='viewer')
     full_name = db.Column(db.String(100), default='')
     position = db.Column(db.String(50), default='')
-    profile_image = db.Column(db.String(200), default='')
+    profile_image = db.Column(db.String(500), default='')
 
 class Update(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -115,11 +126,14 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 # ==========================================
-# 🔹 HELPER FUNCTIONS & SEEDING
+# HELPER FUNCTIONS
 # ==========================================
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGE_EXTENSIONS
 
 def seed_database():
     with app.app_context():
@@ -129,25 +143,28 @@ def seed_database():
             if 'user' in inspector.get_table_names():
                 cols = [c['name'] for c in inspector.get_columns('user')]
                 if 'profile_image' not in cols:
-                    db.session.execute(text("ALTER TABLE user ADD COLUMN profile_image VARCHAR(200) DEFAULT ''"))
-                    db.session.commit()
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE \"user\" ADD COLUMN profile_image VARCHAR(500) DEFAULT ''"))
+                        conn.commit()
             if 'comment' in inspector.get_table_names():
                 cols = [c['name'] for c in inspector.get_columns('comment')]
                 if 'email' not in cols:
-                    db.session.execute(text("ALTER TABLE comment ADD COLUMN email VARCHAR(150) DEFAULT ''"))
-                    db.session.commit()
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE comment ADD COLUMN email VARCHAR(150) DEFAULT ''"))
+                        conn.commit()
                 if 'phone' not in cols:
-                    db.session.execute(text("ALTER TABLE comment ADD COLUMN phone VARCHAR(50) DEFAULT ''"))
-                    db.session.commit()
-        except Exception:
-            pass
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE comment ADD COLUMN phone VARCHAR(50) DEFAULT ''"))
+                        conn.commit()
+        except Exception as e:
+            app.logger.error(f"Migration warning: {e}")
 
         if not User.query.filter_by(username='admin').first():
             admin = User(
-                username='admin', 
-                password_hash=generate_password_hash('admin123'), 
-                role='teacher', 
-                full_name='Mr. Admin', 
+                username='admin',
+                password_hash=generate_password_hash('admin123'),
+                role='teacher',
+                full_name='Mr. Admin',
                 position='Mx HOD'
             )
             db.session.add(admin)
@@ -156,7 +173,7 @@ def seed_database():
 seed_database()
 
 # ==========================================
-# 🔹 STATIC & ASSET ROUTES
+# STATIC & ASSET ROUTES
 # ==========================================
 
 @app.route('/uploads/<path:filename>')
@@ -168,11 +185,11 @@ def stream_static_media(filename):
     return send_from_directory(STATIC_MEDIA_DIR, filename, mimetype=mimetypes.guess_type(filename)[0] or 'application/octet-stream')
 
 @app.route('/manifest.json')
-def serve_manifest(): 
+def serve_manifest():
     return send_from_directory('static', 'manifest.json', mimetype='application/json')
 
 @app.route('/sw.js')
-def serve_sw(): 
+def serve_sw():
     return send_from_directory('static', 'sw.js', mimetype='application/javascript')
 
 @app.route('/sitemap.xml')
@@ -184,11 +201,11 @@ def robots():
     return send_from_directory('static', 'robots.txt', mimetype='text/plain')
 
 # ==========================================
-# 🔹 PAGE ROUTES
+# PAGE ROUTES
 # ==========================================
 
 @app.route('/')
-def home(): 
+def home():
     return render_template('index.html', page='home')
 
 @app.route('/updates')
@@ -213,7 +230,7 @@ def about():
     return render_template('index.html', page='about', comments=comments)
 
 # ==========================================
-# 🔹 AUTHENTICATION
+# AUTHENTICATION
 # ==========================================
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -237,13 +254,14 @@ def logout():
     return redirect(url_for('home'))
 
 # ==========================================
-# 🔹 API ROUTES: TEACHERS
+# TEACHER API ROUTES
 # ==========================================
 
 @app.route('/api/teachers/add', methods=['POST'])
 @login_required
 def add_teacher():
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
     full_name = request.form.get('full_name', '').strip()
@@ -272,20 +290,49 @@ def add_teacher():
 @app.route('/api/teacher/profile', methods=['POST'])
 @login_required
 def update_teacher_profile():
-    if current_user.role != 'teacher': abort(403)
-    current_user.full_name = request.form.get('full_name')
-    current_user.position = request.form.get('position')
-    file = request.files.get('profile_image')
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"prof_{current_user.id}_{file.filename}")
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        current_user.profile_image = filename
-    db.session.commit()
-    flash('Profile updated.')
+    if current_user.role != 'teacher':
+        abort(403)
+
+    try:
+        current_user.full_name = request.form.get('full_name', '').strip()
+        current_user.position = request.form.get('position', '').strip()
+
+        file = request.files.get('profile_image')
+        if file and file.filename and file.filename != '':
+            if not allowed_image(file.filename):
+                flash('Invalid file type. Use JPG, PNG, or GIF only.')
+                return redirect(url_for('teachers'))
+
+            if app.config.get('CLOUDINARY_ENABLED'):
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder='bayune_teachers',
+                    public_id=f"prof_{current_user.id}",
+                    overwrite=True,
+                    resource_type='image',
+                    transformation=[
+                        {'width': 400, 'height': 400, 'crop': 'thumb', 'gravity': 'face'},
+                        {'quality': 'auto', 'fetch_format': 'auto'}
+                    ]
+                )
+                current_user.profile_image = upload_result['secure_url']
+            else:
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                filename = secure_filename(f"prof_{current_user.id}_{file.filename}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                current_user.profile_image = filename
+
+        db.session.commit()
+        flash('Profile updated successfully.')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating profile: {str(e)}')
+        app.logger.error(f"Profile update failed: {e}")
+
     return redirect(url_for('teachers'))
 
 # ==========================================
-# 🔹 API ROUTES: COMMENTS
+# COMMENT API ROUTES
 # ==========================================
 
 @app.route('/api/comments', methods=['POST'])
@@ -296,7 +343,7 @@ def submit_comment():
     email = (request.form.get('email') or '').strip()
     phone = (request.form.get('phone') or '').strip()
     content = (request.form.get('content') or '').strip()
-    
+
     if not email and not phone:
         flash('Please provide a valid Email or Phone Number.')
         return redirect(url_for('about'))
@@ -306,9 +353,15 @@ def submit_comment():
     if not content or len(content.split()) > 255:
         flash('Comment must be between 1 and 255 words.')
         return redirect(url_for('about'))
-        
-    db.session.add(Comment(full_name=full_name, status=status, class_name=class_name if status == 'Student' else None, 
-                           email=email, phone=phone, content=content))
+
+    db.session.add(Comment(
+        full_name=full_name,
+        status=status,
+        class_name=class_name if status == 'Student' else None,
+        email=email,
+        phone=phone,
+        content=content
+    ))
     db.session.commit()
     flash('Thank you! Your comment/query has been submitted.')
     return redirect(url_for('about'))
@@ -316,7 +369,8 @@ def submit_comment():
 @app.route('/api/comments/<int:comment_id>/delete', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     comment = db.session.get(Comment, comment_id)
     if comment:
         db.session.delete(comment)
@@ -325,13 +379,14 @@ def delete_comment(comment_id):
     return redirect(url_for('about'))
 
 # ==========================================
-# 🔹 API ROUTES: UPDATES
+# UPDATE API ROUTES
 # ==========================================
 
 @app.route('/api/updates', methods=['POST'])
 @login_required
 def post_update():
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     title, content = request.form.get('title'), request.form.get('content')
     if title and content:
         db.session.add(Update(title=title, content=content, author=current_user))
@@ -342,7 +397,8 @@ def post_update():
 @app.route('/api/updates/<int:update_id>/edit', methods=['POST'])
 @login_required
 def edit_update(update_id):
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     update = db.session.get(Update, update_id)
     if update:
         update.title = request.form.get('title')
@@ -354,7 +410,8 @@ def edit_update(update_id):
 @app.route('/api/updates/<int:update_id>/delete', methods=['POST'])
 @login_required
 def delete_update(update_id):
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     update = db.session.get(Update, update_id)
     if update:
         db.session.delete(update)
@@ -363,20 +420,27 @@ def delete_update(update_id):
     return redirect(url_for('updates'))
 
 # ==========================================
-# 🔹 API ROUTES: STUDENT RESOURCES
+# RESOURCE API ROUTES
 # ==========================================
 
 @app.route('/api/resources', methods=['POST'])
 @login_required
 def upload_resource():
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     grade, file = request.form.get('grade'), request.files.get('file')
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
         unique_filename = f"{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}_{filename}"
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-        db.session.add(Resource(grade=grade, original_filename=filename, saved_filename=unique_filename, file_type=ext, uploader=current_user))
+        db.session.add(Resource(
+            grade=grade,
+            original_filename=filename,
+            saved_filename=unique_filename,
+            file_type=ext,
+            uploader=current_user
+        ))
         db.session.commit()
         flash('Resource uploaded.')
     return redirect(url_for('students'))
@@ -384,13 +448,20 @@ def upload_resource():
 @app.route('/api/resources/register-static', methods=['POST'])
 @login_required
 def register_static_resource():
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     grade, filename = request.form.get('grade'), secure_filename(request.form.get('filename'))
     if not filename or not os.path.exists(os.path.join(STATIC_MEDIA_DIR, filename)):
         flash('File not found in static/resources/.')
         return redirect(url_for('students'))
     ext = filename.rsplit('.', 1)[1].lower()
-    db.session.add(Resource(grade=grade, original_filename=filename, saved_filename=f"static:{filename}", file_type=ext, uploader=current_user))
+    db.session.add(Resource(
+        grade=grade,
+        original_filename=filename,
+        saved_filename=f"static:{filename}",
+        file_type=ext,
+        uploader=current_user
+    ))
     db.session.commit()
     flash('Static resource registered.')
     return redirect(url_for('students'))
@@ -398,7 +469,8 @@ def register_static_resource():
 @app.route('/api/resources/<int:res_id>/preview')
 def preview_resource(res_id):
     res = db.session.get(Resource, res_id)
-    if not res: abort(404)
+    if not res:
+        abort(404)
     mime = mimetypes.guess_type(res.original_filename)[0] or 'application/octet-stream'
     path = STATIC_MEDIA_DIR if res.saved_filename.startswith('static:') else app.config['UPLOAD_FOLDER']
     filename = res.saved_filename[7:] if res.saved_filename.startswith('static:') else res.saved_filename
@@ -407,7 +479,8 @@ def preview_resource(res_id):
 @app.route('/api/resources/<int:res_id>/download')
 def download_resource(res_id):
     res = db.session.get(Resource, res_id)
-    if not res: abort(404)
+    if not res:
+        abort(404)
     path = STATIC_MEDIA_DIR if res.saved_filename.startswith('static:') else app.config['UPLOAD_FOLDER']
     filename = res.saved_filename[7:] if res.saved_filename.startswith('static:') else res.saved_filename
     return send_from_directory(path, filename, as_attachment=True, download_name=res.original_filename)
@@ -415,26 +488,31 @@ def download_resource(res_id):
 @app.route('/api/resources/<int:res_id>/delete', methods=['POST'])
 @login_required
 def delete_resource(res_id):
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     res = db.session.get(Resource, res_id)
     if res:
         if not res.saved_filename.startswith('static:'):
             fpath = os.path.join(app.config['UPLOAD_FOLDER'], res.saved_filename)
-            if os.path.exists(fpath): os.remove(fpath)
+            if os.path.exists(fpath):
+                os.remove(fpath)
         db.session.delete(res)
         db.session.commit()
         flash('Resource deleted.')
     return redirect(url_for('students'))
 
 # ==========================================
-# 🔹 API ROUTES: TEACHER AIDS
+# TEACHER AIDS API ROUTES
 # ==========================================
 
 @app.route('/api/teacher-aids', methods=['POST'])
 @login_required
 def upload_teacher_aid():
-    if current_user.role != 'teacher': abort(403)
-    title, desc, url = request.form.get('title'), request.form.get('description',''), request.form.get('url','')
+    if current_user.role != 'teacher':
+        abort(403)
+    title = request.form.get('title')
+    desc = request.form.get('description', '')
+    url = request.form.get('url', '')
     aid = TeacherAid(title=title, description=desc, uploader=current_user)
     file = request.files.get('file')
     if file and file.filename != '' and allowed_file(file.filename):
@@ -459,14 +537,22 @@ def upload_teacher_aid():
 @app.route('/api/teacher-aids/register-static', methods=['POST'])
 @login_required
 def register_static_aid():
-    if current_user.role != 'teacher': abort(403)
-    title, desc = request.form.get('title'), request.form.get('description','')
+    if current_user.role != 'teacher':
+        abort(403)
+    title, desc = request.form.get('title'), request.form.get('description', '')
     filename = secure_filename(request.form.get('filename'))
     if not filename or not os.path.exists(os.path.join(STATIC_MEDIA_DIR, filename)):
         flash('File not found in static/resources/.')
         return redirect(url_for('teachers'))
     ext = filename.rsplit('.', 1)[1].lower()
-    aid = TeacherAid(title=title, description=desc, file_type=ext, original_filename=filename, saved_filename=f"static:{filename}", uploader=current_user)
+    aid = TeacherAid(
+        title=title,
+        description=desc,
+        file_type=ext,
+        original_filename=filename,
+        saved_filename=f"static:{filename}",
+        uploader=current_user
+    )
     db.session.add(aid)
     db.session.commit()
     flash('Static aid registered.')
@@ -475,8 +561,10 @@ def register_static_aid():
 @app.route('/api/teacher-aids/<int:aid_id>/download')
 def download_aid(aid_id):
     aid = db.session.get(TeacherAid, aid_id)
-    if not aid: abort(404)
-    if aid.url: return redirect(aid.url)
+    if not aid:
+        abort(404)
+    if aid.url:
+        return redirect(aid.url)
     if aid.saved_filename:
         path = STATIC_MEDIA_DIR if aid.saved_filename.startswith('static:') else app.config['UPLOAD_FOLDER']
         filename = aid.saved_filename[7:] if aid.saved_filename.startswith('static:') else aid.saved_filename
@@ -487,12 +575,14 @@ def download_aid(aid_id):
 @app.route('/api/teacher-aids/<int:aid_id>/delete', methods=['POST'])
 @login_required
 def delete_aid(aid_id):
-    if current_user.role != 'teacher': abort(403)
+    if current_user.role != 'teacher':
+        abort(403)
     aid = db.session.get(TeacherAid, aid_id)
     if aid:
         if not aid.saved_filename.startswith('static:') and aid.saved_filename:
             fpath = os.path.join(app.config['UPLOAD_FOLDER'], aid.saved_filename)
-            if os.path.exists(fpath): os.remove(fpath)
+            if os.path.exists(fpath):
+                os.remove(fpath)
         db.session.delete(aid)
         db.session.commit()
         flash('Aid deleted.')
