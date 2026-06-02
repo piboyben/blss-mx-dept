@@ -159,10 +159,10 @@ def seed_database():
         except Exception as e:
             app.logger.error(f"Migration warning: {e}")
 
-        if not User.query.filter_by(username='admin').first():
+        if not User.query.filter_by(username='maths').first():
             admin = User(
-                username='admin',
-                password_hash=generate_password_hash('admin123'),
+                username='maths',
+                password_hash=generate_password_hash('mxnamba'),
                 role='teacher',
                 full_name='Mr. Admin',
                 position='Mx HOD'
