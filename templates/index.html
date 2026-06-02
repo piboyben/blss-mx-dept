@@ -3,36 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bayune Lutheran Secondary School Mathematics</title>
-    <meta name="description" content="Official Mathematics Department Portal">
+    
+    <!-- PRIMARY SEO META TAGS -->
+    <title>Bayune Lutheran Secondary School - Mathematics Department</title>
+    <meta name="description" content="Official Mathematics Department Portal for Bayune Lutheran Secondary School. Access study resources for Grades 9-12, exam schedules, teacher profiles, and academic announcements.">
+    <meta name="keywords" content="Bayune Lutheran, BLSS, Mathematics Department, PNG Education, Grade 9 Math, Grade 10 Math, Grade 11 Math, Grade 12 Math, Advanced Mathematics, General Mathematics, Study Resources, Teacher Portal">
+    <meta name="author" content="Bayune Lutheran Secondary School Mathematics Department">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="googlebot" content="index, follow">
     <meta name="theme-color" content="#1e3a8a">
+    <link rel="canonical" href="https://blss-mx-dept.onrender.com/">
 
-    <!-- FAVICON PACKAGE (RealFaviconGenerator) -->
-<link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
-<link rel="shortcut icon" href="/static/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+    <!-- OPEN GRAPH (Facebook, WhatsApp, LinkedIn Previews) -->
+    <meta property="og:title" content="Bayune Lutheran Secondary School - Mathematics Department">
+    <meta property="og:description" content="Official portal for student resources, teacher updates, and academic announcements.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blss-mx-dept.onrender.com">
+    <meta property="og:image" content="https://blss-mx-dept.onrender.com/static/apple-touch-icon.png">
+    <meta property="og:site_name" content="Bayune Maths Department">
 
-<!-- PWA MANIFEST -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1e3a8a">
+    <!-- TWITTER CARD -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bayune Lutheran - Mathematics Department">
+    <meta name="twitter:description" content="Official Mathematics portal for students and teachers.">
+    <meta name="twitter:image" content="https://blss-mx-dept.onrender.com/static/apple-touch-icon.png">
 
-<!-- SEO META TAGS -->
-<title>Bayune Lutheran Secondary School - Mathematics Department</title>
-<meta name="google-site-verification" content="nDdPiVdEzxba_npF12QrC6yvWDYy-OiF8_2_N_6ZOko" />
-<meta name="description" content="Official Mathematics Department Portal for Bayune Lutheran Secondary School. Access study resources for Grades 9-12, exam schedules, and academic announcements.">
-<meta name="keywords" content="Bayune Lutheran, BLSS, Mathematics Department, PNG Education, Study Resources, Teacher Portal">
-<meta name="author" content="Bayune Lutheran Secondary School">
-<meta name="robots" content="index, follow">
+    <!-- FAVICON & PWA ICONS -->
+    <link rel="icon" type="image/png" href="/static/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json">
 
-<!-- OPEN GRAPH (WhatsApp, Facebook Sharing) -->
-<meta property="og:title" content="Bayune Lutheran - Mathematics Department">
-<meta property="og:description" content="Official Mathematics portal for students and teachers.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://blss-mx-dept.onrender.com">
-<meta property="og:image" content="https://blss-mx-dept.onrender.com/static/apple-touch-icon.png">
+    <!-- SCHEMA.ORG STRUCTURED DATA (Helps Google understand your site) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "Bayune Lutheran Secondary School - Mathematics Department",
+      "url": "https://blss-mx-dept.onrender.com",
+      "logo": "https://blss-mx-dept.onrender.com/static/apple-touch-icon.png",
+      "description": "Official Mathematics Department Portal providing study resources and academic announcements for Grades 9-12.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "PG"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "math.dept@bayunelhs.edu.pg",
+        "contactType": "Customer Service"
+      }
+    }
+    </script>
 
-
+    <!-- STYLES & FONTS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.min.css">
     <style>
@@ -57,7 +81,7 @@
     <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-2 flex justify-between items-center">
             <a href="/" class="flex items-center gap-3">
-                <img src="/uploads/BLSS.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white" onerror="this.src='https://ui-avatars.com/api/?name=BL&background=1e3a8a&color=fff&length=2&size=100'">
+                <img src="/static/BLSS.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white" onerror="this.src='https://ui-avatars.com/api/?name=BL&background=1e3a8a&color=fff&length=2&size=100'">
                 <div class="flex flex-col">
                     <span class="text-lg md:text-xl font-bold tracking-tight leading-tight">Bayune Lutheran Secondary School</span>
                     <span class="text-xs md:text-sm font-semibold text-blue-200">Mathematics Department</span>
@@ -238,13 +262,12 @@
                     </div>
                 {% endif %}
             </section>
-               {% elif page == 'teachers' %}
+        {% elif page == 'teachers' %}
             <section class="max-w-5xl mx-auto">
                 <h2 class="text-3xl font-bold text-blue-900 mb-6 text-center">👨🏫 Teacher Portal</h2>
                 
                 {% if not current_user.is_authenticated %}
                     <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        <!-- Login Form -->
                         <div class="bg-white p-8 rounded-xl shadow-lg">
                             <h3 class="text-xl font-semibold mb-4 text-center text-blue-900">Existing Teacher Login</h3>
                             <form action="/login" method="POST" class="space-y-4">
@@ -254,7 +277,6 @@
                             </form>
                         </div>
 
-                        <!-- Registration Form -->
                         <div class="bg-green-50 p-8 rounded-xl shadow-lg border-2 border-green-200">
                             <h3 class="text-xl font-semibold mb-2 text-center text-green-800">New Teacher Registration</h3>
                             <p class="text-sm text-gray-600 mb-4 text-center">Create your own teacher profile.</p>
@@ -279,9 +301,14 @@
                         </div>
                     </div>
                 {% else %}
-                    <!-- LOGGED IN VIEW -->
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Department Faculty Profiles</h3>
+                        {% if 'hod' in current_user.position.lower() %}
+                            <a href="/hod-dashboard" class="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800 text-sm font-medium transition flex items-center gap-1 mt-2 sm:mt-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                HOD Management Dashboard
+                            </a>
+                        {% endif %}
                     </div>
                     
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -307,7 +334,6 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Profile Edit Modal -->
                     <div id="profile-edit-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
                         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
                             <h3 class="text-lg font-bold mb-4">Edit Your Profile</h3>
@@ -382,7 +408,60 @@
                     </div>
                 {% endif %}
             </section>
-
+        {% elif page == 'hod' %}
+            <section class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-blue-900">🛡️ HOD Management Dashboard</h2>
+                    <a href="/teachers" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Back to Teachers</a>
+                </div>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-blue-50 text-blue-900">
+                            <tr>
+                                <th class="p-4">Full Name</th>
+                                <th class="p-4">Position</th>
+                                <th class="p-4">Username</th>
+                                <th class="p-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for teacher in teachers %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-medium">{{ teacher.full_name }}</td>
+                                <td class="p-4"><span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">{{ teacher.position }}</span></td>
+                                <td class="p-4 font-mono text-sm">{{ teacher.username }}</td>
+                                <td class="p-4 flex gap-2 flex-wrap">
+                                    <form action="/api/hod/reset-password/{{ teacher.id }}" method="POST" class="inline" onsubmit="return confirm('Reset password to BLSS2024?');">
+                                        <button type="submit" class="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600">Reset PW</button>
+                                    </form>
+                                    <button onclick="document.getElementById('edit-un-modal-{{ teacher.id }}').classList.remove('hidden')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">Edit User</button>
+                                    {% if teacher.id != current_user.id %}
+                                    <form action="/api/hod/delete-user/{{ teacher.id }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete this teacher?');">
+                                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Delete</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <div id="edit-un-modal-{{ teacher.id }}" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+                                <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+                                    <h3 class="text-lg font-bold mb-4">Edit Username: {{ teacher.full_name }}</h3>
+                                    <form action="/api/hod/update-username/{{ teacher.id }}" method="POST" class="space-y-3">
+                                        <input type="text" name="new_username" value="{{ teacher.username }}" required class="w-full p-3 border border-gray-300 rounded">
+                                        <div class="flex justify-end gap-2">
+                                            <button type="button" onclick="document.getElementById('edit-un-modal-{{ teacher.id }}').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                                            <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800">Save</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    <strong>⚠️ Security Note:</strong> Passwords are encrypted and cannot be viewed. The "Reset PW" button changes the password to the default: <code>BLSS2024</code>. The HOD must provide this new password to the teacher.
+                </div>
+            </section>
         {% elif page == 'about' %}
             <section class="max-w-4xl mx-auto space-y-10">
                 <div class="bg-white p-8 rounded-xl shadow-md">
@@ -495,7 +574,6 @@
         {% endif %}
     </main>
 
-    <!-- Media Player Modal -->
     <div id="player-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
             <div class="flex justify-between items-center p-4 border-b bg-gray-50">
@@ -508,7 +586,6 @@
         </div>
     </div>
 
-    <!-- Preview Modal -->
     <div id="preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
             <div class="flex justify-between items-center p-4 border-b bg-gray-50">
@@ -529,16 +606,8 @@
     </footer>
 
     <script>
-        // ============================================
-        // SAFE ELEMENT HELPER
-        // ============================================
-        function safeElement(id) {
-            return document.getElementById(id);
-        }
+        function safeElement(id) { return document.getElementById(id); }
 
-        // ============================================
-        // MOBILE MENU (All Pages)
-        // ============================================
         const menuBtn = safeElement('menu-btn');
         const mobileMenu = safeElement('mobile-menu');
         if (menuBtn && mobileMenu) {
@@ -548,33 +617,22 @@
             });
         }
         
-        // ============================================
-        // AUTO-HIDE FLASH MESSAGES
-        // ============================================
         setTimeout(() => {
             document.querySelectorAll('.bg-blue-100').forEach(f => {
-                f.style.opacity = '0';
-                f.style.transition = 'opacity 0.5s ease';
+                f.style.opacity = '0'; f.style.transition = 'opacity 0.5s ease';
                 setTimeout(() => f.remove(), 500);
             });
         }, 4000);
 
-        // ============================================
-        // COMMENT FORM LOGIC (About Page Only)
-        // ============================================
         function toggleClassDropdown() {
             const commentStatus = safeElement('comment-status');
             const container = safeElement('class-select-container');
             const classInput = safeElement('class-dropdown');
             if (!commentStatus || !container || !classInput) return;
-            
             if (commentStatus.value === 'Student') {
-                container.classList.remove('hidden');
-                classInput.required = true;
+                container.classList.remove('hidden'); classInput.required = true;
             } else {
-                container.classList.add('hidden');
-                classInput.value = '';
-                classInput.required = false;
+                container.classList.add('hidden'); classInput.value = ''; classInput.required = false;
             }
         }
 
@@ -582,7 +640,6 @@
             const commentContent = safeElement('comment-content');
             const counter = safeElement('word-counter');
             if (!commentContent || !counter) return;
-            
             const text = commentContent.value.trim();
             const words = text === '' ? 0 : text.split(/\s+/).length;
             counter.textContent = `${words} / 255 words`;
@@ -590,58 +647,37 @@
             counter.classList.toggle('text-green-600', words <= 255 && words > 0);
         }
 
-        // ============================================
-        // MEDIA PLAYER MODAL
-        // ============================================
         function openPlayer(id, type, isAid = false) {
             const modal = safeElement('player-modal');
             const container = safeElement('player-container');
             if (!modal || !container) return;
-            
             const route = isAid ? 'teacher-aids' : 'resources';
             const url = `/api/${route}/${id}/preview`;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
             container.innerHTML = `<p class="text-white animate-pulse">Loading stream...</p>`;
-            
             if (['mp3', 'wav'].includes(type)) {
                 container.innerHTML = `<audio controls autoplay class="media-player"><source src="${url}" type="audio/${type === 'mp3' ? 'mpeg' : 'wav'}"></audio>`;
             } else {
                 container.innerHTML = `<video controls autoplay class="media-player"><source src="${url}" type="video/${type}"></video>`;
             }
         }
-        
         function closePlayer() {
             const modal = safeElement('player-modal');
             const container = safeElement('player-container');
             if (!modal || !container) return;
-            
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            container.innerHTML = '';
+            modal.classList.add('hidden'); modal.classList.remove('flex'); container.innerHTML = '';
         }
-        
         const playerModal = safeElement('player-modal');
-        if (playerModal) {
-            playerModal.addEventListener('click', (e) => {
-                if (e.target.id === 'player-modal') closePlayer();
-            });
-        }
+        if (playerModal) playerModal.addEventListener('click', (e) => { if(e.target.id === 'player-modal') closePlayer(); });
 
-        // ============================================
-        // PREVIEW MODAL
-        // ============================================
         function openPreview(id, type, isAid = false) {
             const modal = safeElement('preview-modal');
             const container = safeElement('preview-container');
             if (!modal || !container) return;
-            
             const route = isAid ? 'teacher-aids' : 'resources';
             const url = `/api/${route}/${id}/preview`;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
             container.innerHTML = '<p class="text-gray-500 animate-pulse">Loading preview...</p>';
-            
             if (['png', 'jpg', 'jpeg', 'gif'].includes(type)) {
                 container.innerHTML = `<img src="${url}" class="max-w-full max-h-[70vh] object-contain rounded">`;
             } else if (type === 'pdf') {
@@ -652,75 +688,44 @@
                 });
             }
         }
-        
         function closePreview() {
             const modal = safeElement('preview-modal');
             const container = safeElement('preview-container');
             if (!modal || !container) return;
-            
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            container.innerHTML = '';
+            modal.classList.add('hidden'); modal.classList.remove('flex'); container.innerHTML = '';
         }
-        
         const previewModal = safeElement('preview-modal');
-        if (previewModal) {
-            previewModal.addEventListener('click', (e) => {
-                if (e.target.id === 'preview-modal') closePreview();
-            });
-        }
+        if (previewModal) previewModal.addEventListener('click', (e) => { if(e.target.id === 'preview-modal') closePreview(); });
 
-        // ============================================
-        // PROFILE EDIT MODAL (Teachers Page)
-        // ============================================
         function openProfileEdit(name, pos) {
             const modal = safeElement('profile-edit-modal');
             const nameInput = safeElement('edit-fullname');
             const posInput = safeElement('edit-position');
-            
             if (!modal) return;
             if (nameInput) nameInput.value = name;
             if (posInput) posInput.value = pos;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
         }
-        
         function closeProfileEdit() {
             const modal = safeElement('profile-edit-modal');
             if (!modal) return;
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
         }
-        
         const profileEditModal = safeElement('profile-edit-modal');
-        if (profileEditModal) {
-            profileEditModal.addEventListener('click', (e) => {
-                if (e.target.id === 'profile-edit-modal') closeProfileEdit();
-            });
-        }
+        if (profileEditModal) profileEditModal.addEventListener('click', (e) => { if(e.target.id === 'profile-edit-modal') closeProfileEdit(); });
 
-        // ============================================
-        // ADD TEACHER MODAL (Teachers Page)
-        // ============================================
         const addTeacherModal = safeElement('add-teacher-modal');
         if (addTeacherModal) {
             addTeacherModal.addEventListener('click', (e) => {
                 if (e.target.id === 'add-teacher-modal') {
-                    addTeacherModal.classList.add('hidden');
-                    addTeacherModal.classList.remove('flex');
+                    addTeacherModal.classList.add('hidden'); addTeacherModal.classList.remove('flex');
                 }
             });
         }
 
-        // ============================================
-        // SERVICE WORKER REGISTRATION
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => {
-                    console.log('SW registration failed:', err);
-                });
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
     </script>

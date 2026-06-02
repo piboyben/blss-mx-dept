@@ -139,7 +139,6 @@ def seed_database():
                         conn.commit()
         except Exception as e:
             app.logger.error(f"Migration warning: {e}")
-        # ✅ DEFAULT ADMIN SEEDING REMOVED
 
 seed_database()
 
@@ -207,26 +206,6 @@ def logout():
     flash('Logged out successfully.')
     return redirect(url_for('home'))
 
-# ==========================================
-# 🔹 CLEANUP ROUTE (Run once, then delete)
-# ==========================================
-@app.route('/remove-default-admin')
-def remove_default_admin():
-    if request.args.get('key') != 'BayuneSuperSecretKey2024!':
-        abort(404)
-    try:
-        admin_user = User.query.filter_by(username='admin').first()
-        if admin_user:
-            db.session.delete(admin_user)
-            db.session.commit()
-            return "✅ Default 'admin' account deleted successfully. Database is clean."
-        return "✅ No default 'admin' account found. Database is already clean."
-    except Exception as e:
-        return f"❌ Error: {str(e)}"
-
-# ==========================================
-# 🔹 PUBLIC TEACHER REGISTRATION
-# ==========================================
 @app.route('/api/teachers/register', methods=['POST'])
 def register_teacher():
     username = request.form.get('username', '').strip()
@@ -289,6 +268,58 @@ def update_teacher_profile():
         db.session.rollback()
         flash(f'Error updating profile: {str(e)}')
     return redirect(url_for('teachers'))
+
+# ==========================================
+# 🔹 HOD MANAGEMENT DASHBOARD ROUTES
+# ==========================================
+@app.route('/hod-dashboard')
+@login_required
+def hod_dashboard():
+    if 'hod' not in current_user.position.lower():
+        abort(403)
+    teachers = User.query.filter_by(role='teacher').all()
+    return render_template('index.html', page='hod', teachers=teachers)
+
+@app.route('/api/hod/reset-password/<int:user_id>', methods=['POST'])
+@login_required
+def hod_reset_password(user_id):
+    if 'hod' not in current_user.position.lower():
+        abort(403)
+    user = db.session.get(User, user_id)
+    if user and user.role == 'teacher':
+        new_pw = request.form.get('new_password', 'BLSS2024')
+        user.password_hash = generate_password_hash(new_pw)
+        db.session.commit()
+        flash(f'Password for {user.username} reset to: {new_pw}')
+    return redirect(url_for('hod_dashboard'))
+
+@app.route('/api/hod/update-username/<int:user_id>', methods=['POST'])
+@login_required
+def hod_update_username(user_id):
+    if 'hod' not in current_user.position.lower():
+        abort(403)
+    user = db.session.get(User, user_id)
+    if user and user.role == 'teacher':
+        new_username = request.form.get('new_username', '').strip()
+        if new_username and not User.query.filter_by(username=new_username).first():
+            user.username = new_username
+            db.session.commit()
+            flash(f'Username updated to: {new_username}')
+        else:
+            flash('Username already exists or is invalid.')
+    return redirect(url_for('hod_dashboard'))
+
+@app.route('/api/hod/delete-user/<int:user_id>', methods=['POST'])
+@login_required
+def hod_delete_user(user_id):
+    if 'hod' not in current_user.position.lower():
+        abort(403)
+    user = db.session.get(User, user_id)
+    if user and user.role == 'teacher' and user.id != current_user.id:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Teacher account deleted.')
+    return redirect(url_for('hod_dashboard'))
 
 @app.route('/api/comments', methods=['POST'])
 def submit_comment():
