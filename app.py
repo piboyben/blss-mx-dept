@@ -516,5 +516,28 @@ def delete_aid(aid_id):
         flash('Aid deleted.')
     return redirect(url_for('teachers'))
 
+# ==========================================
+# 🔹 TEMPORARY: PROMOTE CURRENT USER TO HOD
+# ⚠️ DELETE THIS ENTIRE BLOCK AFTER USE!
+# ==========================================
+@app.route('/make-me-hod')
+@login_required
+def make_me_hod():
+    try:
+        # Find the current logged-in user and update their position
+        user = db.session.get(User, current_user.id)
+        user.position = "Mx HOD"  # This contains 'hod', so the dashboard will unlock
+        db.session.commit()
+        
+        return """
+        <h1 style="color:green; text-align:center; margin-top:50px;">✅ Success!</h1>
+        <p style="text-align:center; font-size:18px;">Your position has been updated to <b>'Mx HOD'</b>.</p>
+        <p style="text-align:center;"><a href="/teachers" style="padding:10px 20px; background:#1e3a8a; color:white; text-decoration:none; border-radius:5px;">Go to Teachers Page</a></p>
+        <hr>
+        <p style="color:red; text-align:center; font-weight:bold;">⚠️ CRITICAL: Delete the '/make-me-hod' route from app.py immediately and push to GitHub!</p>
+        """
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
