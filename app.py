@@ -587,6 +587,38 @@ def delete_aid(aid_id):
         db.session.commit()
         flash('Aid deleted.')
     return redirect(url_for('teachers'))
-
+# ==========================================
+# 🔹 TEMPORARY ADMIN CREDENTIALS UPDATE ROUTE
+# ⚠️ DELETE THIS ENTIRE BLOCK AFTER USE!
+# ==========================================
+@app.route('/secure-update-admin')
+@login_required
+def secure_update_admin():
+    # Security check: Only allow logged-in teachers to use this
+    if current_user.role != 'teacher':
+        abort(403)
+    
+    # 👇 CHANGE THESE TO YOUR DESIRED NEW CREDENTIALS 👇
+    new_username = "maths"
+    new_password = "mxnamba2026"
+    
+    try:
+        # Update the currently logged-in user's credentials
+        current_user.username = new_username
+        current_user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        
+        return f"""
+        <h2 style="color:green;">✅ Success!</h2>
+        <p>Username changed to: <b>{new_username}</b></p>
+        <p>Password changed to: <b>{new_password}</b></p>
+        <hr>
+        <p style="color:red; font-weight:bold; font-size:18px;">⚠️ CRITICAL SECURITY STEP: Delete the '/secure-update-admin' route from app.py immediately and redeploy!</p>
+        <br>
+        <a href="/teachers" style="padding:10px 20px; background:#1e3a8a; color:white; text-decoration:none; border-radius:5px;">Go back to Dashboard</a>
+        """
+    except Exception as e:
+        db.session.rollback()
+        return f"❌ Error: {str(e)}"
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
