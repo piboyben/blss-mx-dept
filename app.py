@@ -1,4 +1,4 @@
-
+ 
 import os
 import mimetypes
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, session
@@ -12,26 +12,35 @@ from sqlalchemy import inspect, text
 app = Flask(__name__)
 
 # ==========================================
-# 🔹 PERSISTENT DATABASE CONFIGURATION
+# 🔹 DATABASE CONFIGURATION (FIXED)
 # ==========================================
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
 if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///instance/bayune_maths.db'
+if DATABASE_URL:
+    # Use PostgreSQL (Render)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+else:
+    # Use Local SQLite (Codespace/Local)
+    # We use an absolute path to ensure the file is found regardless of where python is run from
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(base_dir, 'bayune_maths.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True}
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bayune-lhs-maths-secure-key-2026')
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
 # Ensure required directories exist
-os.makedirs('instance', exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'), exist_ok=True)
 STATIC_MEDIA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'resources')
 os.makedirs(STATIC_MEDIA_DIR, exist_ok=True)
 
-# 🔹 DATABASE MUST BE INITIALIZED HERE BEFORE ANY MODELS
+# 🔹 INIT DB (MUST BE BEFORE MODELS)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
