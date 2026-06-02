@@ -10,20 +10,22 @@ from datetime import datetime, timezone
 from sqlalchemy import inspect, text
 
 app = Flask(__name__)
+
+# 🔹 PERSISTENT DATABASE CONFIGURATION
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///instance/bayune_maths.db'
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True}
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bayune-lhs-maths-secure-key-2026')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bayune_maths.db'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
+# Ensure instance folder exists for local SQLite fallback
+os.makedirs('instance', exist_ok=True)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'), exist_ok=True)
-STATIC_MEDIA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'resources')
-os.makedirs(STATIC_MEDIA_DIR, exist_ok=True)
-
-db = SQLAlchemy(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'teachers'
 
 @app.after_request
 def disable_cache(response):
