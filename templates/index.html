@@ -590,11 +590,15 @@
         document.getElementById('profile-edit-modal').addEventListener('click', (e) => { if(e.target.id === 'profile-edit-modal') closeProfileEdit(); });
 
         // Add Teacher Modal Backdrop Click Close
-        document.getElementById('add-teacher-modal').addEventListener('click', (e) => {
-            if(e.target.id === 'add-teacher-modal') {
-                e.target.classList.add('hidden'); e.target.classList.remove('flex');
-            }
-        });
+        const addTeacherModal = document.getElementById('add-teacher-modal');
+if (addTeacherModal) {
+    addTeacherModal.addEventListener('click', (e) => {
+        if (e.target.id === 'add-teacher-modal') {
+            e.target.classList.add('hidden');
+            e.target.classList.remove('flex');
+        }
+    });
+
 
         if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
     </script>
