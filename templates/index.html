@@ -32,7 +32,7 @@
     <nav class="bg-blue-900 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-2 flex justify-between items-center">
             <a href="/" class="flex items-center gap-3">
-                <img src="uploads/BLSS.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white">
+                <img src="/uploads/BLSS.png" alt="Logo" class="h-10 w-10 rounded-full border-2 border-white" onerror="this.src='https://ui-avatars.com/api/?name=BL&background=1e3a8a&color=fff&length=2&size=100'">
                 <div class="flex flex-col">
                     <span class="text-lg md:text-xl font-bold tracking-tight leading-tight">Bayune Lutheran Secondary School</span>
                     <span class="text-xs md:text-sm font-semibold text-blue-200">Mathematics Department</span>
@@ -88,7 +88,7 @@
                         <p class="text-gray-500">Stream or download PDFs, videos, and practice materials by grade level.</p>
                     </a>
                     <a href="/teachers" class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 border-t-4 border-purple-500">
-                        <h3 class="text-xl font-bold mb-2 text-blue-900">👨‍🏫 Teacher Portal</h3>
+                        <h3 class="text-xl font-bold mb-2 text-blue-900">👨🏫 Teacher Portal</h3>
                         <p class="text-gray-500">Secure login for educators to manage content, profiles, and teaching aids.</p>
                     </a>
                 </div>
@@ -107,7 +107,7 @@
                 <div class="space-y-4">
                     {% for update in updates %}
                         <article class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition relative">
-                            <div class="flex justify-between items-start mb-2">
+                            <div class="flex justify-between items-start mb-2 flex-wrap gap-2">
                                 <h3 class="text-xl font-bold text-blue-900">{{ update.title }}</h3>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">{{ update.created_at.strftime('%B %d, %Y') }}</span>
@@ -172,8 +172,8 @@
                             {% endif %}
                             <ul class="space-y-2 flex-grow">
                                 {% for res in resources if res.grade == grade %}
-                                    <li class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100 hover:bg-gray-100 transition">
-                                        <div class="flex items-center gap-2 overflow-hidden">
+                                    <li class="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-100 hover:bg-gray-100 transition flex-wrap gap-2">
+                                        <div class="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
                                             <span class="text-xs font-bold px-1.5 py-0.5 rounded 
                                                 {% if res.file_type == 'pdf' %}bg-red-100 text-red-700
                                                 {% elif res.file_type == 'csv' %}bg-green-100 text-green-700
@@ -184,7 +184,7 @@
                                             </span>
                                             <span class="text-sm truncate" title="{{ res.original_filename }}">{{ res.original_filename }}</span>
                                         </div>
-                                        <div class="flex items-center gap-2 ml-2">
+                                        <div class="flex items-center gap-2 ml-2 flex-wrap">
                                             {% if res.file_type in ['mp4','webm','mp3','wav'] %}
                                                 <button onclick="openPlayer('{{ res.id }}', '{{ res.file_type }}')" class="text-indigo-600 hover:underline text-xs font-semibold whitespace-nowrap">▶ Play</button>
                                             {% endif %}
@@ -215,7 +215,7 @@
             </section>
         {% elif page == 'teachers' %}
             <section class="max-w-5xl mx-auto">
-                <h2 class="text-3xl font-bold text-blue-900 mb-6 text-center">👨‍🏫 Teacher Portal</h2>
+                <h2 class="text-3xl font-bold text-blue-900 mb-6 text-center">👨🏫 Teacher Portal</h2>
                 {% if not current_user.is_authenticated %}
                     <form action="/login" method="POST" class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
                         <div class="text-center mb-6">
@@ -241,22 +241,22 @@
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                         {% for teacher in teachers %}
                             <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center text-center hover:shadow-lg transition border-t-4 border-purple-500 relative">
-                               {% if teacher.profile_image %}
-    {% if teacher.profile_image.startswith('http') %}
-        <img src="{{ teacher.profile_image }}" alt="{{ teacher.full_name }}" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm object-cover">
-    {% else %}
-        <img src="{{ url_for('uploaded_file', filename=teacher.profile_image) }}" alt="{{ teacher.full_name }}" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm object-cover">
-    {% endif %}
-{% else %}
-    <img src="https://ui-avatars.com/api/?name={{ teacher.full_name|urlencode }}&background=6d28d9&color=fff&length=2&size=120" alt="Default" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm">
-{% endif %}
+                                {% if teacher.profile_image %}
+                                    {% if teacher.profile_image.startswith('http') %}
+                                        <img src="{{ teacher.profile_image }}" alt="{{ teacher.full_name }}" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm object-cover">
+                                    {% else %}
+                                        <img src="{{ url_for('uploaded_file', filename=teacher.profile_image) }}" alt="{{ teacher.full_name }}" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm object-cover">
+                                    {% endif %}
+                                {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ teacher.full_name|urlencode }}&background=6d28d9&color=fff&length=2&size=120" alt="Default" class="w-24 h-24 rounded-full mb-4 border-4 border-gray-100 shadow-sm">
+                                {% endif %}
 
                                 <h4 class="text-lg font-bold text-blue-900">{{ teacher.full_name }}</h4>
                                 <p class="text-purple-600 font-semibold text-sm mb-2">{{ teacher.position }}</p>
                                 <p class="text-xs text-gray-500">@{{ teacher.username }}</p>
                                 
                                 {% if current_user.id == teacher.id %}
-                                    <button onclick="openProfileEdit('{{ teacher.full_name }}', '{{ teacher.position }}', '{{ teacher.username }}')" class="mt-3 w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 text-sm font-medium transition">Edit My Profile</button>
+                                    <button onclick="openProfileEdit('{{ teacher.full_name|e }}', '{{ teacher.position|e }}')" class="mt-3 w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 text-sm font-medium transition">Edit My Profile</button>
                                 {% endif %}
                             </div>
                         {% endfor %}
@@ -293,7 +293,7 @@
                             <form action="/api/teacher/profile" method="POST" enctype="multipart/form-data" class="space-y-3">
                                 <input type="text" name="full_name" id="edit-fullname" class="w-full p-3 border border-gray-300 rounded">
                                 <input type="text" name="position" id="edit-position" placeholder="Position (e.g., Mx HOD, SSM)" class="w-full p-3 border border-gray-300 rounded">
-                                <input type="file" name="profile_image" class="w-full p-2 border rounded text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700">
+                                <input type="file" name="profile_image" accept="image/*" class="w-full p-2 border rounded text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700">
                                 <div class="flex justify-end gap-2 mt-4">
                                     <button type="button" onclick="closeProfileEdit()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
                                     <button type="submit" class="px-4 py-2 bg-purple-900 text-white rounded hover:bg-purple-800">Save Changes</button>
@@ -502,108 +502,205 @@
     <footer class="bg-gray-900 text-gray-400 py-6 text-center mt-auto">
         <div class="container mx-auto px-4">
             <p>&copy; 2026 Bayune Lutheran Secondary School Mathematics Department. All rights reserved.</p>
-             <p>Architectured By Mr BENNY</p>
+            <p>Architectured By Mr BENNY</p>
         </div>
     </footer>
 
     <script>
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        document.querySelectorAll('#mobile-menu a').forEach(link => link.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+        // ============================================
+        // SAFE ELEMENT HELPER
+        // ============================================
+        function safeElement(id) {
+            return document.getElementById(id);
+        }
+
+        // ============================================
+        // MOBILE MENU (All Pages)
+        // ============================================
+        const menuBtn = safeElement('menu-btn');
+        const mobileMenu = safeElement('mobile-menu');
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            });
+        }
         
+        // ============================================
+        // AUTO-HIDE FLASH MESSAGES
+        // ============================================
         setTimeout(() => {
             document.querySelectorAll('.bg-blue-100').forEach(f => {
-                f.style.opacity = '0'; f.style.transition = 'opacity 0.5s ease';
+                f.style.opacity = '0';
+                f.style.transition = 'opacity 0.5s ease';
                 setTimeout(() => f.remove(), 500);
             });
         }, 4000);
 
+        // ============================================
+        // COMMENT FORM LOGIC (About Page Only)
+        // ============================================
         function toggleClassDropdown() {
-            const status = document.getElementById('comment-status').value;
-            const container = document.getElementById('class-select-container');
-            const classInput = document.getElementById('class-dropdown');
-            if(status === 'Student') {
-                container.classList.remove('hidden'); classInput.required = true;
+            const commentStatus = safeElement('comment-status');
+            const container = safeElement('class-select-container');
+            const classInput = safeElement('class-dropdown');
+            if (!commentStatus || !container || !classInput) return;
+            
+            if (commentStatus.value === 'Student') {
+                container.classList.remove('hidden');
+                classInput.required = true;
             } else {
-                container.classList.add('hidden'); classInput.value = ''; classInput.required = false;
+                container.classList.add('hidden');
+                classInput.value = '';
+                classInput.required = false;
             }
         }
 
         function updateWordCount() {
-            const text = document.getElementById('comment-content').value.trim();
+            const commentContent = safeElement('comment-content');
+            const counter = safeElement('word-counter');
+            if (!commentContent || !counter) return;
+            
+            const text = commentContent.value.trim();
             const words = text === '' ? 0 : text.split(/\s+/).length;
-            const counter = document.getElementById('word-counter');
             counter.textContent = `${words} / 255 words`;
             counter.classList.toggle('text-red-500', words > 255);
             counter.classList.toggle('text-green-600', words <= 255 && words > 0);
         }
 
+        // ============================================
+        // MEDIA PLAYER MODAL
+        // ============================================
         function openPlayer(id, type, isAid = false) {
-            const modal = document.getElementById('player-modal');
-            const container = document.getElementById('player-container');
+            const modal = safeElement('player-modal');
+            const container = safeElement('player-container');
+            if (!modal || !container) return;
+            
             const route = isAid ? 'teacher-aids' : 'resources';
             const url = `/api/${route}/${id}/preview`;
-            modal.classList.remove('hidden'); modal.classList.add('flex');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             container.innerHTML = `<p class="text-white animate-pulse">Loading stream...</p>`;
-            if(['mp3','wav'].includes(type)) {
+            
+            if (['mp3', 'wav'].includes(type)) {
                 container.innerHTML = `<audio controls autoplay class="media-player"><source src="${url}" type="audio/${type === 'mp3' ? 'mpeg' : 'wav'}"></audio>`;
             } else {
                 container.innerHTML = `<video controls autoplay class="media-player"><source src="${url}" type="video/${type}"></video>`;
             }
         }
+        
         function closePlayer() {
-            document.getElementById('player-modal').classList.add('hidden');
-            document.getElementById('player-modal').classList.remove('flex');
-            document.getElementById('player-container').innerHTML = '';
+            const modal = safeElement('player-modal');
+            const container = safeElement('player-container');
+            if (!modal || !container) return;
+            
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            container.innerHTML = '';
         }
-        document.getElementById('player-modal').addEventListener('click', (e) => { if(e.target.id === 'player-modal') closePlayer(); });
+        
+        const playerModal = safeElement('player-modal');
+        if (playerModal) {
+            playerModal.addEventListener('click', (e) => {
+                if (e.target.id === 'player-modal') closePlayer();
+            });
+        }
 
+        // ============================================
+        // PREVIEW MODAL
+        // ============================================
         function openPreview(id, type, isAid = false) {
-            const modal = document.getElementById('preview-modal');
-            const container = document.getElementById('preview-container');
+            const modal = safeElement('preview-modal');
+            const container = safeElement('preview-container');
+            if (!modal || !container) return;
+            
             const route = isAid ? 'teacher-aids' : 'resources';
             const url = `/api/${route}/${id}/preview`;
-            modal.classList.remove('hidden'); modal.classList.add('flex');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             container.innerHTML = '<p class="text-gray-500 animate-pulse">Loading preview...</p>';
-            if(['png','jpg','jpeg','gif'].includes(type)) container.innerHTML = `<img src="${url}" class="max-w-full max-h-[70vh] object-contain rounded">`;
-            else if(type === 'pdf') container.innerHTML = `<iframe src="${url}" class="w-full h-[70vh] border-none rounded"></iframe>`;
-            else fetch(url).then(r => r.text()).then(t => container.innerHTML = `<pre class="bg-white p-4 rounded border text-sm overflow-auto w-full max-h-[70vh] whitespace-pre-wrap">${t.replace(/</g, '&lt;')}</pre>`);
+            
+            if (['png', 'jpg', 'jpeg', 'gif'].includes(type)) {
+                container.innerHTML = `<img src="${url}" class="max-w-full max-h-[70vh] object-contain rounded">`;
+            } else if (type === 'pdf') {
+                container.innerHTML = `<iframe src="${url}" class="w-full h-[70vh] border-none rounded"></iframe>`;
+            } else {
+                fetch(url).then(r => r.text()).then(t => {
+                    container.innerHTML = `<pre class="bg-white p-4 rounded border text-sm overflow-auto w-full max-h-[70vh] whitespace-pre-wrap">${t.replace(/</g, '&lt;')}</pre>`;
+                });
+            }
         }
+        
         function closePreview() {
-            document.getElementById('preview-modal').classList.add('hidden');
-            document.getElementById('preview-modal').classList.remove('flex');
-            document.getElementById('preview-container').innerHTML = '';
+            const modal = safeElement('preview-modal');
+            const container = safeElement('preview-container');
+            if (!modal || !container) return;
+            
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            container.innerHTML = '';
         }
-        document.getElementById('preview-modal').addEventListener('click', (e) => { if(e.target.id === 'preview-modal') closePreview(); });
+        
+        const previewModal = safeElement('preview-modal');
+        if (previewModal) {
+            previewModal.addEventListener('click', (e) => {
+                if (e.target.id === 'preview-modal') closePreview();
+            });
+        }
 
-        function openProfileEdit(name, pos, user) {
-            document.getElementById('edit-fullname').value = name;
-            document.getElementById('edit-position').value = pos;
-            document.getElementById('profile-edit-modal').classList.remove('hidden');
-            document.getElementById('profile-edit-modal').classList.add('flex');
+        // ============================================
+        // PROFILE EDIT MODAL (Teachers Page)
+        // ============================================
+        function openProfileEdit(name, pos) {
+            const modal = safeElement('profile-edit-modal');
+            const nameInput = safeElement('edit-fullname');
+            const posInput = safeElement('edit-position');
+            
+            if (!modal) return;
+            if (nameInput) nameInput.value = name;
+            if (posInput) posInput.value = pos;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
+        
         function closeProfileEdit() {
-            document.getElementById('profile-edit-modal').classList.add('hidden');
-            document.getElementById('profile-edit-modal').classList.remove('flex');
+            const modal = safeElement('profile-edit-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
-        document.getElementById('profile-edit-modal').addEventListener('click', (e) => { if(e.target.id === 'profile-edit-modal') closeProfileEdit(); });
-
-        // Add Teacher Modal Backdrop Click Close
-        const addTeacherModal = document.getElementById('add-teacher-modal');
-if (addTeacherModal) {
-    addTeacherModal.addEventListener('click', (e) => {
-        if (e.target.id === 'add-teacher-modal') {
-            e.target.classList.add('hidden');
-            e.target.classList.remove('flex');
+        
+        const profileEditModal = safeElement('profile-edit-modal');
+        if (profileEditModal) {
+            profileEditModal.addEventListener('click', (e) => {
+                if (e.target.id === 'profile-edit-modal') closeProfileEdit();
+            });
         }
-    });
 
+        // ============================================
+        // ADD TEACHER MODAL (Teachers Page)
+        // ============================================
+        const addTeacherModal = safeElement('add-teacher-modal');
+        if (addTeacherModal) {
+            addTeacherModal.addEventListener('click', (e) => {
+                if (e.target.id === 'add-teacher-modal') {
+                    addTeacherModal.classList.add('hidden');
+                    addTeacherModal.classList.remove('flex');
+                }
+            });
+        }
 
-        if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+        // ============================================
+        // SERVICE WORKER REGISTRATION
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('SW registration failed:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
-
-
-
